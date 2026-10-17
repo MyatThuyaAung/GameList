@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 My Game List</title>
+    <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --card-bg: #181825;
+            --text-color: #cdd6f4;
+            --accent-color: #89b4fa;
+            --success-color: #a6e3a1;
+            --border-color: #313244;
+            --danger-color: #f38ba8;
+            --warning-color: #fab387;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        h1 {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .category-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        li:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .game-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            accent-color: var(--success-color);
+            cursor: pointer;
+        }
+        .completed span {
+            text-decoration: line-through;
+            color: #6c7086;
+        }
+        .actions-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        select.move-select {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            padding: 2px 6px;
+        }
+        .delete-btn:hover {
+            opacity: 1;
+        }
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        select, input[type="text"] {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+        }
+        button.add-btn {
+            background: var(--accent-color);
+            color: #11111b;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button.add-btn:hover {
+            opacity: 0.9;
+        }
+        .utility-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .utility-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>
+        <span>🎮 My Game List</span>
+        <div class="header-actions">
+            <!-- Replaced reset button with utility export/import controls -->
+            <button class="utility-btn" onclick="exportData()">Export JSON</button>
+            <button class="utility-btn" onclick="document.getElementById('importFile').click()">Import JSON</button>
+            <input type="file" id="importFile" style="display: none" accept=".json" onchange="importData(event)">
+        </div>
+    </h1>
+
+    <!-- Form for creating a new entry -->
+    <div class="category-container">
+        <h3>➕ Add New Game</h3>
+        <form class="add-form" id="addGameForm">
+            <input type="text" id="gameTitle" placeholder="Enter game title..." required>
+            <select id="gameCategory">
+                <option value="✅ Installed">✅ Installed</option>
+                <option value="⬇️ Downloading">⬇️ Downloading</option>
+                <option value="🎯 Planned — Action & Adventure">🎯 Planned — Action & Adventure</option>
+                <option value="🚗 Driving & Simulation">🚗 Driving & Simulation</option>
+                <option value="🕹️ Emulation">🕹️ Emulation</option>
+            </select>
+            <button type="submit" class="add-btn">Add Game</button>
+        </form>
+    </div>
+
+    <!-- Container for dynamically rendering game list categories -->
+    <div id="listsContainer"></div>
+
+    <script>
+        /**
+         * Default data structure for initial load.
+         */
+        const initialData = {
+            "✅ Installed": [
+                { name: "Minecraft", done: true },
+                { name: "Control Ultimate Edition", done: true },
+                { name: "PRAGMATA", done: true },
+                { name: "The Witcher 3: Wild Hunt", done: true },
+                { name: "NFS Payback", done: true },
+                { name: "NFS Underground 2", done: true }
+            ],
+            "⬇️ Downloading": [
+                { name: "Forza Horizon 5", done: false },
+                { name: "Onimusha: Way of the Sword", done: false },
+                { name: "Black Myth: Wukong", done: false },
+                { name: "NFS Hot Pursuit Remastered", done: false }
+            ],
+            "🎯 Planned — Action & Adventure": [
+                { name: "Ghost of Tsushima DIRECTOR’S CUT", done: false },
+                { name: "Red Dead Redemption 2", done: false },
+                { name: "The Last of Us", done: false },
+                { name: "Elden Ring", done: false },
+                { name: "Marvel's Spider-Man Remastered", done: false },
+                { name: "Marvel's Spider-Man: Miles Morales", done: false },
+                { name: "Batman: Arkham series (Knight)", done: false },
+                { name: "Assassin's Creed Origins", done: false },
+                { name: "Assassin's Creed Odyssey", done: false },
+                { name: "Assassin's Creed IV: Black Flag", done: false },
+                { name: "God of War (2018)", done: false },
+                { name: "Middle-earth: Shadow of War", done: false },
+                { name: "Star Wars Jedi: Fallen Order", done: false },
+                { name: "Devil May Cry 5", done: false },
+                { name: "Rise of the Tomb Raider", done: false },
+                { name: "Cyberpunk 2077", done: false },
+                { name: "Metro Exodus", done: false },
+                { name: "Bloodborne", done: false },
+                { name: "Crimson Desert", done: false },
+                { name: "Uncharted 4", done: false },
+                { name: "Horizon Zero Dawn", done: false }
+            ],
+            "🚗 Driving & Simulation": [
+                { name: "BeamNG.drive", done: false },
+                { name: "Euro Truck Simulator 2", done: false },
+                { name: "Assetto Corsa", done: false },
+                { name: "SnowRunner", done: false },
+                { name: "Forza Motorsport", done: false },
+                { name: "DiRT Rally 2.0", done: false },
+                { name: "NFS Most Wanted (2005)", done: false }
+            ],
+            "🕹️ Emulation": [
+                { name: "The Legend of Zelda: Twilight Princess HD", done: false },
+                { name: "The Legend of Zelda: Breath of the Wild", done: false },
+                { name: "Shadow of the Colossus", done: false },
+                { name: "Ōkami", done: false },
+                { name: "Burnout 3: Takedown", done: false }
+            ]
+        };
+
+        const categories = Object.keys(initialData);
+
+        /**
+         * Load state from localStorage or initialize with default structure.
+         */
+        let gamesData = JSON.parse(localStorage.getItem('myGameListData')) || initialData;
+
+        /**
+         * Persist state to localStorage and re-render DOM elements.
+         */
+        function saveData() {
+            localStorage.setItem('myGameListData', JSON.stringify(gamesData));
+            renderLists();
+        }
+
+        /**
+         * Dynamically render categories, entries, and controls.
+         */
+        function renderLists() {
+            const container = document.getElementById('listsContainer');
+            container.innerHTML = '';
+
+            for (const [category, games] of Object.entries(gamesData)) {
+                const section = document.createElement('div');
+                section.className = 'category-container';
+                
+                let html = `<h3>${category}</h3><ul>`;
+
+                if (games.length === 0) {
+                    html += `<li style="color: #6c7086; justify-content: center;">No titles in this section.</li>`;
+                } else {
+                    games.forEach((game, index) => {
+                        const isChecked = game.done ? 'checked' : '';
+                        const completedClass = game.done ? 'completed' : '';
+
+                        let categoryOptions = categories.map(cat => 
+                            `<option value="${cat}" ${cat === category ? 'selected' : ''}>Move to ${cat.split(' ')[0]}</option>`
+                        ).join('');
+
+                        html += `
+                            <li class="${completedClass}">
+                                <label class="game-info">
+                                    <input type="checkbox" ${isChecked} onchange="toggleGame('${category}', ${index})">
+                                    <span>${game.name}</span>
+                                </label>
+                                <div class="actions-group">
+                                    <select class="move-select" onchange="moveGame('${category}', ${index}, this.value)">
+                                        ${categoryOptions}
+                                    </select>
+                                    <button class="delete-btn" onclick="deleteGame('${category}', ${index})">🗑️</button>
+                                </div>
+                            </li>
+                        `;
+                    });
+                }
+
+                html += `</ul>`;
+                section.innerHTML = html;
+                container.appendChild(section);
+            }
+        }
+
+        /**
+         * Toggle completion state of a game entry.
+         */
+        function toggleGame(category, index) {
+            gamesData[category][index].done = !gamesData[category][index].done;
+            saveData();
+        }
+
+        /**
+         * Relocate a game entry from one category to another.
+         */
+        function moveGame(currentCategory, index, targetCategory) {
+            if (currentCategory === targetCategory) return;
+
+            const [movedGame] = gamesData[currentCategory].splice(index, 1);
+
+            if (targetCategory === "✅ Installed") {
+                movedGame.done = true;
+            } else if (currentCategory === "✅ Installed" && targetCategory !== "✅ Installed") {
+                movedGame.done = false;
+            }
+
+            gamesData[targetCategory].push(movedGame);
+            saveData();
+        }
+
+        /**
+         * Remove a game entry by index.
+         */
+        function deleteGame(category, index) {
+            gamesData[category].splice(index, 1);
+            saveData();
+        }
+
+        /**
+         * Export current game list data state to a local JSON file.
+         */
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gamesData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "GameList_Backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        /**
+         * Import game list data state from an uploaded JSON file.
+         */
+        function importData(event) {
+            const fileReader = new FileReader();
+            if (event.target.files.length > 0) {
+                fileReader.readAsText(event.target.files[0], "UTF-8");
+                fileReader.onload = function(e) {
+                    try {
+                        const parsedData = JSON.parse(e.target.result);
+                        if (typeof parsedData === 'object' && parsedData !== null) {
+                            gamesData = parsedData;
+                            saveData();
+                            alert("Game list successfully imported!");
+                        } else {
+                            throw new Error("Invalid format");
+                        }
+                    } catch (error) {
+                        alert("Failed to import file. Ensure it is a valid JSON backup.");
+                    }
+                };
+            }
+        }
+
+        /**
+         * Event listener for new entry insertion.
+         */
+        document.getElementById('addGameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const titleInput = document.getElementById('gameTitle');
+            const categorySelect = document.getElementById('gameCategory');
+            
+            const title = titleInput.value.trim();
+            const category = categorySelect.value;
+
+            if (title && gamesData[category]) {
+                const isInstalled = category === "✅ Installed";
+                gamesData[category].push({ name: title, done: isInstalled });
+                titleInput.value = '';
+                saveData();
+            }
+        });
+
+        // Initialize view on load
+        renderLists();
+    </script>
+</body>
+</html>
